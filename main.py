@@ -7,15 +7,28 @@ def main():
    
    existsIni = checkIni()
    if existsIni == True:
-      return
+      total = readIni(1)
+      forcast = readIni(2)
    
    else:
       createIni()
    
    root = ctk.CTk()
-   root.geometry("500x600")
+   root.geometry("600x400")
    root.title("Finance Tracker")
    #root.set_appearance_mode("Dark")
+
+   totalLbl = ctk.CTkLabel(root, text = f"Total {total}")
+   totalLbl.pack(pady = 20)
+
+   forcastLbl = ctk.CTkLabel(root, text = f"Forcast {forcast}")
+   forcastLbl.pack(pady = 20)
+
+   addHoursBtn = ctk.CTkButton(root, text = "Add Hours", command=lambda: schedule(root))
+   addHoursBtn.pack(pady = 20)
+
+   addMoneyBtn = ctk.CTkButton(root, text = "Add Money", command=lambda: addMoney(root))
+   addMoneyBtn.pack(pady = 20)
 
    root.mainloop()
 
@@ -25,6 +38,7 @@ def createIni():
 
     config["Settings"] = {
        "total": "0",
+       "forcast": "0",
        "pay": "12.26",
        "tax": "20",
        "rent": "575",
@@ -42,17 +56,32 @@ def checkIni():
    
    return os.path.exists('config.ini')
 
-def readIni():
-   return
+def readIni(option):
+   if option == 1:
+      config = configparser.ConfigParser()
+      config.read("config.ini")
+      total = config["Settings"]["total"]
 
-def updateTotal(newTotal):
-   return
+      return total
+   
+   if option == 2:
+      config = configparser.ConfigParser()
+      config.read("config.ini")
+      forcast = config["Settings"]["total"]
+
+      return forcast
 
 def calcPay():
    return
 
-def schedule():
+def addMoney(root):
+   return
+
+def calcForcast():
+   return
+
+def schedule(root):
    return
 
 if __name__ == "__main__":
-   main().run()
+   main()
