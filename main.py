@@ -2,6 +2,7 @@ import sys
 import os
 import customtkinter as ctk
 import configparser
+import datetime
 
 def main():
    
@@ -64,69 +65,32 @@ def checkIni():
    
    return os.path.exists('config.ini')
 
+def getDate():
+   
+   today = datetime.date.today()
+   return today.strftime("%d")  
+
 def readIni(option):
-   if option == 1:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      total = config["Settings"]["total"]
+    keys = {
+        1: "total",
+        2: "forcast",
+        3: "pay",
+        4: "tax",
+        5: "rent",
+        6: "council tax",
+        7: "wifi",
+        8: "power",
+        9: "month"
+    }
 
-      return total
-   
-   if option == 2:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      forcast = config["Settings"]["forcast"]
+    config = configparser.ConfigParser()
+    config.read("config.ini")
 
-      return forcast
-   
-   if option == 3:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      pay = config["Settings"]["pay"]
-
-      return pay
-   
-   if option == 4:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      tax = config["Settings"]["tax"]
-
-      return tax
-   
-   if option == 5:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      rent = config["Settings"]["rent"]
-
-      return rent
-   
-   if option == 6:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      councilTax = config["Settings"]["council tax"]
-
-      return councilTax
-   
-   if option == 7:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      wifi = config["Settings"]["wifi"]
-
-      return wifi
-   
-   if option == 8:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      power = config["Settings"]["power"]
-
-      return power
-   
-   if option == 9:
-      config = configparser.ConfigParser()
-      config.read("config.ini")
-      month = config["Settings"]["month"]
-
-      return month
+    key = keys.get(option)
+    if key and "Settings" in config and key in config["Settings"]:
+        return config["Settings"][key]
+    else:
+        return None
 
 def calcPay(hours):
    
@@ -144,17 +108,81 @@ def addMoney(root):
 
    return
 
+def checkPayemntDate(option):
+
+    keys = {
+        1: "rent",
+        2: "council tax",
+        3: "wifi",
+        4: "power",
+    }
+
+    config = configparser.ConfigParser()
+
+    config.read("config.ini")
+
+    key = keys.get(option)
+    if key and "Payment Dates" in config and key in config["Payment Dates"]:
+        return config["Payment Dates"][key]
+    else:
+        return None
+
+def convertToInt(valStr):
+   try:
+        val = float(valStr)
+        return val
+        
+   except (TypeError, ValueError):
+        val = 0.0  # fallback if total is missing or invalid
+        return val
+
+def updateForcast(val):
+   
+   total = convertToInt(totalStr = readIni(1))
+
+   forcast = total + val
+
+   config = configparser.ConfigParser()
+   config.read("config.ini")
+
+   if "Settings" not in config:
+        config["Settings"] = {}
+    
+   config["Settings"]["forcast"] = str(forcast)  # configparser stores values as strings
+    
+   with open("config.ini", "w") as configfile:
+    config.write(configfile)
+   
+
 def calcForcast(pay):
    
+   date = getDate()
    currentForcast = readIni(2)
+
    rent = readIni(5)
+   rentDate = checkPayemntDate(1)
+
    tax = readIni(4)
+
    councilTax = readIni(6)
+   councilDate = checkPayemntDate(2)
+
    wifi = readIni(7)
+   wifiDate = checkPayemntDate(3)
+
    power = readIni(8)
+   powerDate = checkPayemntDate(4)
 
    netPay = pay * (1 - tax / 100)
-   expenses = rent + councilTax + power + wifi
+   
+   def isDUE(paymentDay):
+      
+      if paymentDay >= date:
+        return True
+      elif paymentDay == date:
+         return True
+      else:
+         return False
 
    newForcast = currentForcast + netPay
 
