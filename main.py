@@ -94,11 +94,11 @@ def readIni(option):
 
 def calcPay(hours):
    
-   payPerHour = readIni(3)
+   payPerHour = convertToInt(readIni(3))
+   
    pay = hours * payPerHour
 
-   calcForcast(pay)
-   
+   return pay
 
 def addMoney(root):
    
@@ -136,12 +136,10 @@ def convertToInt(valStr):
         val = 0.0  # fallback if total is missing or invalid
         return val
 
-def updateForcast(val):
+def updateForcast(forcast):
    
-   total = convertToInt(totalStr = readIni(1))
-
-   forcast = total + val
-
+   print(forcast)
+   
    config = configparser.ConfigParser()
    config.read("config.ini")
 
@@ -154,61 +152,88 @@ def updateForcast(val):
     config.write(configfile)
    
 
-def calcForcast(pay):
+def calcForcast(pay, r, ct, w, p):
    
-   date = getDate()
-   currentForcast = readIni(2)
+    date = getDate()
+    currentForcast = convertToInt(readIni(2))
 
-   rent = readIni(5)
-   rentDate = checkPayemntDate(1)
+    rent = convertToInt(readIni(5))
+    rentDate = checkPayemntDate(1)
 
-   tax = readIni(4)
+    tax = convertToInt(readIni(4))
 
-   councilTax = readIni(6)
-   councilDate = checkPayemntDate(2)
+    councilTax = convertToInt(readIni(6))
+    councilDate = checkPayemntDate(2)
 
-   wifi = readIni(7)
-   wifiDate = checkPayemntDate(3)
+    wifi = convertToInt(readIni(7))
+    wifiDate = checkPayemntDate(3)
 
-   power = readIni(8)
-   powerDate = checkPayemntDate(4)
+    power = convertToInt(readIni(8))
+    powerDate = checkPayemntDate(4)
 
-   netPay = pay * (1 - tax / 100)
+    #netPay = pay * (1 - tax / 100)
    
-   def isDUE(paymentDay):
-      
-      if paymentDay >= date:
-        return True
-      elif paymentDay == date:
-         return True
-      else:
-         return False
+    if r:  # Rent checkbox is selected
+        currentForcast -= rent
+    if ct:  # Council Tax checkbox is selected
+        currentForcast -= councilTax
+    if w:  # Wifi checkbox is selected
+        currentForcast -= wifi
+    if p:  # Power checkbox is selected
+        currentForcast -= power
+    
+    newForcast = currentForcast + pay
+    print(newForcast)
 
-   newForcast = currentForcast + netPay
+    updateForcast(newForcast)
 
 def checkMonth():
    
    currentMonth = readIni(9)
 
 def schedule(root):
-   
-   subWin = ctk.CTkToplevel(root)
-   subWin.geometry("400x200")
-   subWin.title("Add Hours")
+    subWin = ctk.CTkToplevel(root)
+    subWin.geometry("400x200")
+    subWin.title("Add Hours")
 
-   label = ctk.CTkLabel(subWin, text = "Please enter your weeks schedule")
-   label.pack(pady = 20)
+    label = ctk.CTkLabel(subWin, text="Please enter your week's schedule")
+    label.pack(pady=20)
 
-   hours = ctk.CTkEntry(subWin, placeholder_text= "Hours this week?")
-   hours.pack(pady = 20)
+    hours = ctk.CTkEntry(subWin, placeholder_text="Hours this week?")
+    hours.pack(pady=20)
 
-   def submit():
-      val = hours.get()
-      calcPay(val)
-      subWin.destroy()
+    r = ctk.BooleanVar()
+    ct = ctk.BooleanVar()
+    w = ctk.BooleanVar()
+    p = ctk.BooleanVar()
 
-   submitBtn = ctk.CTkButton(subWin, text = "Submit", command = submit())
-   submitBtn.pck(pady = 20)
+    rent = ctk.CTkCheckBox(subWin, text = "Rent", variable= r)
+    rent.pack(pady=20)
+
+    councilTax = ctk.CTkCheckBox(subWin, text = "Council Tax", variable= ct)
+    councilTax.pack(pady=20)
+
+    wifi = ctk.CTkCheckBox(subWin, text = "Wifi", variable= w)
+    wifi.pack(pady=20)
+
+    power = ctk.CTkCheckBox(subWin, text = "Power", variable= p)
+    power.pack(pady=20)
+
+    def submit():
+        val = convertToInt(hours.get())
+        pay = calcPay(val)
+
+        rState = r.get()     
+        ctState = ct.get()
+        wState = w.get()
+        pState = p.get()
+
+        calcForcast(pay, rState, ctState, wState, pState)
+
+        subWin.destroy()
+
+    submitBtn = ctk.CTkButton(subWin, text="Submit", command=submit)
+    submitBtn.pack(pady=20)
 
 if __name__ == "__main__":
    main()
