@@ -102,11 +102,46 @@ def calcPay(hours):
 
 def addMoney(root):
    
-   subWin = ctk.CTkToplevel(root)
-   subWin.geometry("400x200")
-   subWin.title("Add Money")
+    subWin = ctk.CTkToplevel(root)
+    subWin.geometry("400x200")
+    subWin.title("Add Money")
 
-   return
+    money = ctk.CTkEntry(subWin, placeholder_text="Hours this week?")
+    money.pack(pady=20)
+
+    minus = ctk.BooleanVar()
+    minusCheck = ctk.CTkCheckBox(subWin, text = "Minus Funds?", variable= minus)
+    minusCheck.pack(pady = 20)
+
+    def submit():
+        updateFunds(money.get(), minus)
+        subWin.destroy()
+
+    submitBtn = ctk.CTkButton(subWin, text = "Submit", command = submit)
+    submitBtn.pack(pady = 20)
+
+    return
+
+def updateFunds(money, minus):
+
+    balance = convertToInt(readIni(1))
+
+    if minus == True:
+        newBalance = balance - convertToInt(money)
+    
+    else:
+        newBalance = balance + convertToInt(money)
+
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+    if "Settings" not in config:
+        config["Settings"] = {}
+    
+    config["Settings"]["total"] = str(newBalance)  # configparser stores values as strings
+    
+    with open("config.ini", "w") as configfile:
+        config.write(configfile)
 
 def checkPayemntDate(option):
 
@@ -193,7 +228,7 @@ def checkMonth():
 
 def schedule(root):
     subWin = ctk.CTkToplevel(root)
-    subWin.geometry("400x200")
+    subWin.geometry("600x200")
     subWin.title("Add Hours")
 
     label = ctk.CTkLabel(subWin, text="Please enter your week's schedule")
@@ -202,22 +237,25 @@ def schedule(root):
     hours = ctk.CTkEntry(subWin, placeholder_text="Hours this week?")
     hours.pack(pady=20)
 
+    checkboxFrame = ctk.CTkFrame(subWin)
+    checkboxFrame.pack(pady=10)
+
     r = ctk.BooleanVar()
     ct = ctk.BooleanVar()
     w = ctk.BooleanVar()
     p = ctk.BooleanVar()
 
-    rent = ctk.CTkCheckBox(subWin, text = "Rent", variable= r)
-    rent.pack(pady=20)
+    rent = ctk.CTkCheckBox(checkboxFrame, text="Rent", variable=r)
+    rent.pack(side="left", padx=10)
 
-    councilTax = ctk.CTkCheckBox(subWin, text = "Council Tax", variable= ct)
-    councilTax.pack(pady=20)
+    councilTax = ctk.CTkCheckBox(checkboxFrame, text="Council Tax", variable=ct)
+    councilTax.pack(side="left", padx=10)
 
-    wifi = ctk.CTkCheckBox(subWin, text = "Wifi", variable= w)
-    wifi.pack(pady=20)
+    wifi = ctk.CTkCheckBox(checkboxFrame, text="Wifi", variable=w)
+    wifi.pack(side="left", padx=10)
 
-    power = ctk.CTkCheckBox(subWin, text = "Power", variable= p)
-    power.pack(pady=20)
+    power = ctk.CTkCheckBox(checkboxFrame, text="Power", variable=p)
+    power.pack(side="left", padx=10)
 
     def submit():
         val = convertToInt(hours.get())
